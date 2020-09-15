@@ -22,17 +22,17 @@ import shutil
 import sys
 
 from datetime import datetime, timedelta
+from logging import Logger
 from pathlib import Path
-from typing import List, Generator, Tuple, Set
+from typing import List, Generator, Optional, Tuple, Set
 
 DirContent = Tuple[Set[Path], Set[str]]
 
-def check_dir_path(log_path: str) -> Path:
+def check_dir_path(log_path: str) -> Optional[Path]:
     """Ensures initial directory is valid"""
     p = Path(log_path)
     if not p.exists():
-        print("Can not find provided dir path %s" % log_path)
-        sys.exit(1)
+        return None
     return p.resolve()
 
 def delete_dir(dir_path: Path) -> None:
@@ -62,7 +62,7 @@ def ls(dir_path: Path) -> DirContent:
                 files.add(entry)
     return (dirs, files)
 
-def find_old_files(log: logging.Logger, calculated_time: datetime, log_path: Path) -> Generator[Path, None, None]:
+def find_old_files(log: Logger, calculated_time: datetime, log_path: Path) -> Generator[Path, None, None]:
     """Finds old files in the log path, stopping when a directory is a jobdir"""
     queue = set((log_path, ))
     while queue:
@@ -77,7 +77,7 @@ def find_old_files(log: logging.Logger, calculated_time: datetime, log_path: Pat
             log.debug("%s : walking", root)
             queue = queue.union(current_dirs)
 
-def search_and_destroy(log: logging.Logger, calculated_time: datetime, dry_run: bool, log_path: Path) -> None:
+def search_and_destroy(log: Logger, calculated_time: datetime, dry_run: bool, log_path: Path) -> None:
     """Removes log dir that are older than the calcultated time"""
     for job_dir in find_old_files(log, calculated_time, log_path):
         log.debug("%s : removing old logs", job_dir)
@@ -97,7 +97,8 @@ def usage(argv: List[str]) -> argparse.Namespace:
     parser.add_argument('--debug', action='store_true')
     return parser.parse_args(argv)
 
-def setup_logging(debug: bool) -> logging.Logger:
+def setup_logging(debug: bool) -> Logger:
+    """Create the logger with a nice format string"""
     logging.basicConfig(
         format='%(asctime)s %(levelname)-5.5s %(message)s',
         level=logging.DEBUG if debug else logging.INFO)
@@ -109,6 +110,9 @@ def main() -> None:
     root = check_dir_path(args.log_path_dir)
     calculated_time = datetime.now() - timedelta(days=args.retention_days)
     log = setup_logging(args.debug)
+    if not root:
+        log.error("The provided log path dir does not exists")
+        exit(1)
     search_and_destroy(log, calculated_time, args.dry_run, root)
 
 if __name__ == "__main__":
