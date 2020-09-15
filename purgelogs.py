@@ -50,15 +50,16 @@ def get_jobdir(dirs: Set[Path], files: Set[str]) -> bool:
     return is_zuul or is_jenkins or is_jenkins_console or is_empty_dir
 
 def ls(dir_path: Path) -> DirContent:
-    """Returns the aboluste list of directory and files in a directory"""
+    """Returns the aboluste list of directory and files in a directory, ignoring symlinks"""
     dirs = set()
     files = set()
     for entry in os.listdir(dir_path):
         entry_path = dir_path / entry
-        if entry_path.is_dir():
-            dirs.add(entry_path)
-        elif entry_path.exists():
-            files.add(entry)
+        if not entry_path.is_symlink():
+            if entry_path.is_dir():
+                dirs.add(entry_path)
+            elif entry_path.exists():
+                files.add(entry)
     return (dirs, files)
 
 def find_old_files(log: logging.Logger, calculated_time: datetime, log_path: Path) -> Generator[Path, None, None]:
@@ -69,7 +70,7 @@ def find_old_files(log: logging.Logger, calculated_time: datetime, log_path: Pat
         current_dirs, current_files = ls(root)
         if get_jobdir(current_dirs, current_files):
             log.debug("%s : is a job dir", root)
-            dir_date = datetime.fromtimestamp(os.path.getctime(root))
+            dir_date = datetime.fromtimestamp(os.path.getmtime(root))
             if dir_date < calculated_time:
                 yield root
         else:
