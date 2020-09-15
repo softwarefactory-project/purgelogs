@@ -96,12 +96,18 @@ def usage(argv: List[str]) -> argparse.Namespace:
     parser.add_argument('--debug', action='store_true')
     return parser.parse_args(argv)
 
+def setup_logging(debug: bool) -> logging.Logger:
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)-5.5s %(message)s',
+        level=logging.DEBUG if debug else logging.INFO)
+    return logging.getLogger()
+
 def main() -> None:
     """The script entrypoint"""
     args = usage(sys.argv[1:])
     root = check_dir_path(args.log_path_dir)
     calculated_time = datetime.now() - timedelta(days=args.retention_days)
-    log = logging.getLogger()
+    log = setup_logging(args.debug)
     search_and_destroy(log, calculated_time, args.dry_run, root)
 
 if __name__ == "__main__":
