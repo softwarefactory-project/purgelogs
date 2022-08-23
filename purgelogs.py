@@ -20,6 +20,7 @@ import logging
 import os
 import shutil
 import sys
+import time
 
 from datetime import datetime, timedelta
 from logging import Logger
@@ -88,13 +89,14 @@ def usage(argv: List[str]) -> argparse.Namespace:
     """The script usage
 
     >>> usage([])
-    Namespace(debug=False, dry_run=False, log_path_dir='/var/www/logs', retention_days=31)
+    Namespace(debug=False, dry_run=False, log_path_dir='/var/www/logs', loop=None, retention_days=31)
     """
     parser = argparse.ArgumentParser(description="Purge old logs")
     parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('--retention-days', type=int, default=31)
     parser.add_argument('--log-path-dir', default='/var/www/logs')
     parser.add_argument('--debug', action='store_true')
+    parser.add_argument('--loop', type=int, metavar="SECONDS", help="Continuously run every SECONDS")
     return parser.parse_args(argv)
 
 def setup_logging(debug: bool) -> Logger:
@@ -113,7 +115,11 @@ def main() -> None:
     if not root:
         log.error("The provided log path dir does not exists")
         exit(1)
-    search_and_destroy(log, calculated_time, args.dry_run, root)
+    while True:
+        search_and_destroy(log, calculated_time, args.dry_run, root)
+        if not args.loop:
+            break
+        time.sleep(args.loop)
 
 if __name__ == "__main__":
     main()
