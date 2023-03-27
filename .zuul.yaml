@@ -8,7 +8,7 @@
               sphinx_build_dir: build
         - tox-linters:
             nodeset: python-latest-pod
-        - tox-py36:
+        - tox-py39:
             nodeset: python-latest-pod
     gate:
       jobs:
@@ -17,7 +17,7 @@
               - sf-rpm-build
               - tox-docs
               - tox-linters
-              - tox-py36
+              - tox-py39
         - sf-rpm-publish:
             dependencies:
               - wait-for-changes-ahead
@@ -28,7 +28,7 @@
               sphinx_build_dir: build
         - tox-linters:
             nodeset: python-latest-pod
-        - tox-py36:
+        - tox-py39:
             nodeset: python-latest-pod
     release:
       jobs:
