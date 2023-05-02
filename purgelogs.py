@@ -110,13 +110,13 @@ def main() -> None:
     """The script entrypoint"""
     args = usage(sys.argv[1:])
     root = check_dir_path(args.log_path_dir)
-    calculated_time = datetime.now() - timedelta(days=args.retention_days)
     log = setup_logging(args.debug)
     if not root:
         log.error("The provided log path dir does not exists")
         exit(1)
     while True:
         logging.info("Starting cleaning-up log dir...")
+        calculated_time = datetime.now() - timedelta(days=args.retention_days)
         search_and_destroy(log, calculated_time, args.dry_run, root)
         if not args.loop:
             break
