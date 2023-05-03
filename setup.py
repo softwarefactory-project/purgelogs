@@ -16,7 +16,7 @@ from setuptools import setup
 
 setup(
     name='purgelogs',
-    version='0.2.1',
+    version='0.2.3',
     py_modules=['purgelogs'],
     entry_points = {
         'console_scripts': ['purgelogs=purgelogs:main']
