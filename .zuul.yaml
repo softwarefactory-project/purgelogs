@@ -1,3 +1,4 @@
+---
 - project:
     check:
       jobs:
@@ -8,7 +9,7 @@
               sphinx_build_dir: build
         - tox-linters:
             nodeset: python-latest-pod
-        - tox-py39:
+        - tox-py311:
             nodeset: python-latest-pod
     gate:
       jobs:
@@ -17,7 +18,7 @@
               - sf-rpm-build
               - tox-docs
               - tox-linters
-              - tox-py39
+              - tox-py311
         - sf-rpm-publish:
             dependencies:
               - wait-for-changes-ahead
@@ -28,7 +29,7 @@
               sphinx_build_dir: build
         - tox-linters:
             nodeset: python-latest-pod
-        - tox-py39:
+        - tox-py311:
             nodeset: python-latest-pod
     release:
       jobs:
