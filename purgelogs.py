@@ -30,7 +30,7 @@ from typing import List, Generator, Optional, Tuple, Set
 DirContent = Tuple[Set[Path], Set[str]]
 
 def check_dir_path(log_path: str) -> Optional[Path]:
-    """Ensures initial directory is valid"""
+    """Ensures the initial directory is valid"""
     p = Path(log_path)
     if not p.exists():
         return None
@@ -51,7 +51,7 @@ def get_jobdir(dirs: Set[Path], files: Set[str]) -> bool:
     return is_zuul or is_jenkins or is_jenkins_console or is_empty_dir
 
 def ls(dir_path: Path) -> DirContent:
-    """Returns the aboluste list of directory and files in a directory, ignoring symlinks"""
+    """Returns the absolute list of directories and files in a directory, ignoring symlinks"""
     dirs = set()
     files = set()
     for entry in os.listdir(dir_path):
@@ -79,7 +79,7 @@ def find_old_files(log: Logger, calculated_time: datetime, log_path: Path) -> Ge
             queue = queue.union(current_dirs)
 
 def search_and_destroy(log: Logger, calculated_time: datetime, dry_run: bool, log_path: Path) -> None:
-    """Removes log dir that are older than the calcultated time"""
+    """Removes log directories that are older than the calculated time"""
     for job_dir in find_old_files(log, calculated_time, log_path):
         log.debug("%s : removing old logs", job_dir)
         if not dry_run and log_path != job_dir:
@@ -112,7 +112,7 @@ def main() -> None:
     root = check_dir_path(args.log_path_dir)
     log = setup_logging(args.debug)
     if not root:
-        log.error("The provided log path dir does not exists")
+        log.error("The provided log path dir does not exist")
         exit(1)
     while True:
         logging.info("Starting cleaning-up log dir...")
