@@ -3,4 +3,3 @@ __pycache__
 /.tox/
 /build/
 /dist/
-/purgelogs.egg-info/

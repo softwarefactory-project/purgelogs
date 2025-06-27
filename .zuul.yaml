@@ -2,6 +2,7 @@
 - project:
     check:
       jobs:
+        - sf-rpm-build
         - tox-docs:
             nodeset: python-latest-pod
             vars:
@@ -14,12 +15,14 @@
       jobs:
         - wait-for-changes-ahead:
             dependencies:
+              - sf-rpm-build
               - tox-docs
               - tox-linters
               - tox-py311
         - sf-rpm-publish:
             dependencies:
               - wait-for-changes-ahead
+        - sf-rpm-build
         - tox-docs:
             nodeset: python-latest-pod
             vars:
