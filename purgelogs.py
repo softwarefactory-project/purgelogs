@@ -78,11 +78,18 @@ def find_old_files(log: Logger, calculated_time: datetime, log_path: Path) -> Ge
             log.debug("%s : walking", root)
             queue = queue.union(current_dirs)
 
+def get_retain_set(root : Path) -> Set[Path]:
+    """Read the success-builds paths that needs to be kept."""
+    paths = map(lambda path: root / path, os.listdir(root)) if root.is_dir() else []
+    symlinks = filter(lambda path: path.is_symlink(), paths)
+    return {root, *map(lambda path: path.readlink().expanduser().resolve(), symlinks)}
+
 def search_and_destroy(log: Logger, calculated_time: datetime, dry_run: bool, log_path: Path) -> None:
     """Removes log directories that are older than the calculated time"""
+    retain_set = get_retain_set(log_path / "success-builds")
     for job_dir in find_old_files(log, calculated_time, log_path):
         log.debug("%s : removing old logs", job_dir)
-        if not dry_run and log_path != job_dir:
+        if not dry_run and log_path != job_dir and job_dir.resolve() not in retain_set:
             delete_dir(job_dir)
 
 def usage(argv: List[str]) -> argparse.Namespace:

@@ -36,6 +36,10 @@ def touch(path: Path, date: datetime) -> None:
 def touch_old(path: Path) -> None:
     touch(path, datetime.fromtimestamp(0))
 
+def mk_old_build(path: Path) -> None:
+    mkdir(path / "zuul-info")
+    touch_old(path)
+
 @contextmanager
 def setup_tree(tree: Callable[[Path], None]) -> Generator[Path, None, None]:
     root = Path(tempfile.mkdtemp(prefix="purgelogs"))
@@ -57,6 +61,26 @@ def test_purge_symlink() -> None:
         test = unittest.TestCase()
         test.assertTrue((root / "test").is_dir())
         test.assertFalse((root / "common").is_dir())
+
+def test_retain() -> None:
+    def tree(root: Path) -> None:
+        # Create fake builds
+        mk_old_build(root / "build-1")
+        mk_old_build(root / "build-2")
+        # Mark the build-1 as a success-builds
+        mkdir(root / "success-builds")
+        (root / "success-builds" / "keep-me").symlink_to(root / "build-1")
+        touch_old(root / "success-builds")
+    with setup_tree(tree) as root:
+        purgelogs.search_and_destroy(logging.getLogger(), yesterday, False, root)
+        test = unittest.TestCase()
+        # Check that build-1 is retained
+        test.assertTrue((root / "build-1").is_dir())
+        # Check that build-2 got purged
+        test.assertFalse((root / "build-2").is_dir())
+        # Check that success-builds is also preserved
+        test.assertTrue((root / "success-builds" / "keep-me").is_symlink())
+
 
 if __name__ == '__main__':
     unittest.main()
