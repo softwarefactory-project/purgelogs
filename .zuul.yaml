@@ -1,4 +1,10 @@
 ---
+- job:
+    name: tox-py3
+    parent: tox
+    vars:
+      tox_envlist: "py3"
+
 - project:
     check:
       jobs:
@@ -8,7 +14,7 @@
               sphinx_build_dir: build
         - tox-linters:
             nodeset: python-latest-pod
-        - tox-py311:
+        - tox-py3:
             nodeset: python-latest-pod
     gate:
       jobs:
@@ -16,14 +22,14 @@
             dependencies:
               - tox-docs
               - tox-linters
-              - tox-py311
+              - tox-py3
         - tox-docs:
             nodeset: python-latest-pod
             vars:
               sphinx_build_dir: build
         - tox-linters:
             nodeset: python-latest-pod
-        - tox-py311:
+        - tox-py3:
             nodeset: python-latest-pod
     release:
       jobs:
